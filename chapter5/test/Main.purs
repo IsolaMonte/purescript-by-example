@@ -1,14 +1,9 @@
 module Test.Main where
 
---import Prelude (Unit, discard)
---import Effect (Effect)
---import Test.Spec (describe, it)
---import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
---import Test.Spec.Reporter.Console (consoleReporter)
---import Test.Spec.Runner (run)
+import Prelude (Unit, discard)
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
+import Effect
+import Effect.Console (log)
 import Data.Picture (Point(..), Shape(..), Picture, bounds, showBounds)
 
 circle :: Shape
@@ -20,5 +15,5 @@ rectangle = Rectangle (Point { x: 10.0, y: 10.0 }) 10.0 10.0
 picture :: Picture
 picture = [circle, rectangle]
 
-main :: Eff (console :: CONSOLE) Unit
+main :: Effect Unit
 main = log (showBounds (bounds picture))
