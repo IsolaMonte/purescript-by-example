@@ -1,11 +1,11 @@
 module Main where
 
-import Prelude
+import Prelude (class Show, div, otherwise, show, (*), (-), (<=), (<>), (==), (>))
 
-import Data.EuclideanRing (div)
 import Data.Array.Partial (tail)
+import Data.Foldable (sum)
 import Partial.Unsafe (unsafePartial)
-import Data.Foldable (foldl, sum)
+import Data.Picture hiding (Point(..), Shape(..))
 
 -- 5. Pattern matching
 -- This chapter will introduce two new concepts: algebraic data types, and pattern matching.
@@ -96,11 +96,6 @@ sameCity' { address: { city: a } } { address: { city: b } } = if (a == b) then t
 (Medium) What is the most general type of the sameCity function,
 taking into account row polymorphism? What about the livesInLA function defined above?
 -}
-{-
-emma = { name: "Emma", address: { street: "Sveavägen", city: "Oslo" } }
-erika = { name: "Erika", address: { street: "Drottinggatan", city: "Stockholm" } }
-elin = { name: "Elin", address: { street: "Kungsgatan", city: "Stockholm" } }
--}
 sameCity'' :: forall r. { address :: Address | r } -> { address :: Address | r } -> Boolean
 sameCity'' { address: { city: a } } { address: { city: b } } = if (a == b) then true else false
 
@@ -127,4 +122,87 @@ partialFunction = unsafePartial \true -> true
 
 
 --5.12 Algebraic Data Types
+{-
+An algebraic data type is introduced using the data keyword, followed by the name of the new type and any type arguments.
+The type’s constructors are defined after the equals symbol, and are separated by pipe characters (|).
+-}
 
+data Shape
+    = Circle Point Number
+    | Rectangle Point Number Number
+    | Line Point Point
+    | Text Point String
+
+data Point = Point
+    { x :: Number
+    , y :: Number
+    }
+
+-- “a value of type Maybe a is either Nothing, or Just a value of type a”.
+data Maybe a = Nothing | Just a
+
+
+--5.13 Using ADTs
+exampleLine :: Shape
+exampleLine = Line p1 p2
+    where
+        p1 :: Point
+        p1 = Point { x: 0.0, y: 0.0 }
+
+        p2 :: Point
+        p2 = Point { x: 100.0, y: 50.0 }
+
+-- Pattern match on constructor to get the values out!
+showPoint :: Point -> String
+showPoint (Point { x: x, y: y }) =
+  "(" <> show x <> ", " <> show y <> ")"
+
+
+--5.14 Record Puns
+origin :: Point
+origin = Point { x, y }
+  where
+    x = 0.0
+    y = 0.0
+
+
+-- EXERCISES
+{-
+(Easy) Construct a value of type Shape which represents a circle centered at the origin with radius 10.0.
+-}
+drawCircle :: Shape
+drawCircle = Circle center radius
+    where
+        center = origin
+        radius = 10.0
+
+instance showPoint' :: Show Point where
+    show (Point { x, y }) = "(" <> show x <> ", " <> show y <> ")"
+
+instance showShape :: Show Shape where
+    show (Circle c r) = "Circle origin: " <> show c <> ", with radius: " <> show r
+    show _ = "Nothing"
+
+{-
+(Medium) Write a function from Shapes to Shapes, which scales its argument by a factor of 2.0, center the origin.
+-}
+scaleUp :: Shape -> Shape
+scaleUp (Circle c r) = Circle center radius
+    where
+        center = origin
+        radius = 2.0 * r
+scaleUp _ = drawCircle
+
+
+{-
+(Medium) Write a function which extracts the text from a Shape. It should return Maybe String,
+and use the Nothing constructor if the input is not constructed using Text.
+-}
+getText :: Shape -> Maybe String
+getText (Text p s) = Just s
+getText _ = Nothing
+
+-- How to get this into scope?
+instance showMaybe :: Show a => Show (Maybe a) where
+  show (Just x) = "(Just " <> show x <> ")"
+  show Nothing  = "Nothing"
