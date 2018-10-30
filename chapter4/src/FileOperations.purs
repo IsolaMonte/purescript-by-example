@@ -104,12 +104,6 @@ factors' n = filter (\xs -> product xs == n) $ do
     j <- i .. n
     pure [i, j]
 
-factors'' :: Int -> Array Int
-factors'' n = do
-  x <- 1 .. n
-  guard $ (n `mod` x) == 0
-  pure x
-
 factorsWithGuard :: Int -> Array (Array Int)
 factorsWithGuard n = do
     i <- 1 .. n
@@ -173,6 +167,12 @@ factorizations n = [n] : do
   xs <- factorizations $ n / x
   pure $ x : xs
 
+factors'' :: Int -> Array Int
+factors'' n = do
+  x <- 1 .. n
+  guard $ (n `mod` x) == 0
+  pure x
+
 
 --4.14 Accumulators
 reverse :: forall a. Array a -> Array a
@@ -182,12 +182,13 @@ reverse = reverse' []
     reverse' acc xs = reverse' (unsafePartial Partial.head xs : acc)
                                (unsafePartial Partial.tail xs)
 
+
 -- 4.15 Prefer Folds to Explicit Recursion
 reverseR :: forall a. Array a -> Array a
 reverseR = foldr (\x xs -> xs <> [x]) []
 
--- EXCERCISES
 
+-- EXCERCISES
 {-
 1. (Easy) Use foldl to test whether an array of boolean values are all true.
 -}
@@ -197,6 +198,7 @@ isTrue = foldl (\x y -> x && y) true
 {-
 2. (Medium) Characterize those arrays xs for which the function foldl (==) false xs returns true.
 -}
+--allTrue will returns true for isTrue [true, true, true]
 allTrue :: Array Boolean -> Boolean
 allTrue = foldl (==) false
 
@@ -234,8 +236,6 @@ countTailReq'' p = count' 0
 reverseL :: forall a. Array a -> Array a
 reverseL = foldl (\xs x -> [x] <> xs) []
 
-
---4.16 A Virtual Filesystem
 
 --4.17 Listing All Files
 allFiles :: Path -> Array Path

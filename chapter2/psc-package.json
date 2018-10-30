@@ -1,16 +1,13 @@
 {
-  "name": "chapter6",
+  "name": "chapter2",
   "set": "psc-0.12.0",
   "source": "https://github.com/purescript/package-sets.git",
   "depends": [
-    "either",
-    "functions",
-    "maybe",
+    "console",
+    "globals",
+    "math",
     "prelude",
     "psci-support",
-    "spec",
-    "strings",
-    "tuples",
     "unsafe-coerce"
   ]
 }
