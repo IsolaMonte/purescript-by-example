@@ -1,11 +1,11 @@
 module Main where
 
-import Prelude (class Show, div, otherwise, show, (*), (-), (<=), (<>), (==), (>))
-
+import Prelude (div, otherwise, show, (*), (-), (<=), (<>), (==), (>))
+import Data.Picture
 import Data.Array.Partial (tail)
 import Data.Foldable (sum)
 import Partial.Unsafe (unsafePartial)
-import Data.Picture hiding (Point(..), Shape(..))
+import Math (pi, pow)
 
 -- 5. Pattern matching
 -- This chapter will introduce two new concepts: algebraic data types, and pattern matching.
@@ -24,7 +24,6 @@ gcd' n 0 = n
 gcd' 0 n = n
 gcd' n m | n > m     = gcd' (n - m) m
          | otherwise = gcd' n (m - n)
-
 
 -- EXERCISES
 {-
@@ -127,17 +126,6 @@ An algebraic data type is introduced using the data keyword, followed by the nam
 The type’s constructors are defined after the equals symbol, and are separated by pipe characters (|).
 -}
 
-data Shape
-    = Circle Point Number
-    | Rectangle Point Number Number
-    | Line Point Point
-    | Text Point String
-
-data Point = Point
-    { x :: Number
-    , y :: Number
-    }
-
 -- “a value of type Maybe a is either Nothing, or Just a value of type a”.
 data Maybe a = Nothing | Just a
 
@@ -176,12 +164,12 @@ drawCircle = Circle center radius
         center = origin
         radius = 10.0
 
-instance showPoint' :: Show Point where
-    show (Point { x, y }) = "(" <> show x <> ", " <> show y <> ")"
+--instance showPoint' :: Show Point where
+--    show (Point { x, y }) = "(" <> show x <> ", " <> show y <> ")"
 
-instance showShape :: Show Shape where
-    show (Circle c r) = "Circle origin: " <> show c <> ", with radius: " <> show r
-    show _ = "Nothing"
+--instance showShape :: Show Shape where
+--    show (Circle c r) = "Circle origin: " <> show c <> ", with radius: " <> show r
+--    show _ = "Nothing"
 
 {-
 (Medium) Write a function from Shapes to Shapes, which scales its argument by a factor of 2.0, center the origin.
@@ -202,7 +190,24 @@ getText :: Shape -> Maybe String
 getText (Text p s) = Just s
 getText _ = Nothing
 
--- How to get this into scope?
-instance showMaybe :: Show a => Show (Maybe a) where
-  show (Just x) = "(Just " <> show x <> ")"
-  show Nothing  = "Nothing"
+--instance showMaybe :: Show a => Show (Maybe a) where
+--  show (Just x) = "(Just " <> show x <> ")"
+--  show Nothing  = "Nothing"
+
+-- EXERCISES
+{-
+1. (Medium) Extend the vector graphics library with a new operation area which computes the area of a Shape.
+For the purposes of this exercise, the area of a piece of text is assumed to be zero.
+-}
+area :: Shape -> Number
+area (Text p s) = 0.0
+area (Circle o r) = pi * (pow r 2.0)
+area (Rectangle o n1 n2) = n1 * n2
+area (Line p1 p2) = 0.0
+
+{-
+2. (Difficult) Extend the Shape type with a new data constructor Clipped,
+which clips another Picture to a rectangle.
+Extend the shapeBounds function to compute the bounds of a clipped picture.
+Note that this makes Shape into a recursive data type.
+-}
