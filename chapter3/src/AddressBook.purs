@@ -40,9 +40,7 @@ insertEntry entry book = Cons entry book
 -- 3.12 Querying the Address Book
 
 findEntry :: String -> String -> AddressBook -> Maybe Entry
-findEntry firstName lastName book = head $ filter filterEntry book
--- findEntry firstName lastName book = (head << filter filterEntry) book
--- findEntry firstName lastName = head << filter filterEntry
+findEntry firstName lastName = head <<< filter filterEntry
   where
       -- head :: AddressBook -> Maybe Entry
       -- filter :: (Entry -> Boolean) -> AddressBook -> AddressBook
@@ -57,13 +55,14 @@ For example, the type of the head function as used is specialized to AddressBook
 -}
 
 {-
-2. (Medium) Write a function which looks up an Entry given a street address, by reusing the existing code in findEntry. Test your function in PSCi.
+2. (Medium) Write a function which looks up an Entry given a street address,
+by reusing the existing code in findEntry.
 -}
-findByAddress :: Address -> AddressBook -> Maybe Entry
-findByAddress addr book = head $ filter filterAddress book
+findByAddress :: String -> AddressBook -> Maybe Entry
+findByAddress street = head <<< filter filterAddress
   where
     filterAddress :: Entry -> Boolean
-    filterAddress entry = entry.address == addr
+    filterAddress entry = entry.address.street == street
 
 {-
 3. (Medium) Write a function which tests whether a name appears in a AddressBook, returning a Boolean value.
@@ -81,7 +80,7 @@ Hint: Use PSCi to find the type of the Data.List.nubBy function, which removes d
 -}
 -- nubBy :: (Entry -> Entry -> Boolean) -> AddressBook -> AddressBook
 removeDuplicates :: AddressBook -> AddressBook
-removeDuplicates book = nubBy (isDuplicate) book
+removeDuplicates book = nubBy isDuplicate book
 
 isDuplicate :: (Entry -> Entry -> Boolean)
 isDuplicate entryA entryB = entryA.firstName == entryB.firstName && entryA.lastName == entryB.lastName

@@ -1,19 +1,14 @@
 module Main where
 
-import Prelude (bind, discard, map, mod, pure, ($), (&&), (*), (+), (-), (==), (>))
+import Prelude (bind, discard, map, mod, pure, ($), (&&), (*), (+), (-), (/), (<), (<<<), (<>), (==), (>), (>=))
 import Control.MonadZero (guard)
-import Data.Array (length, null, uncons, filter, concatMap, (..), (:))
-import Data.Array.Partial (tail, head)
-import Data.Foldable (product, foldl, foldr)
+import Data.Array (head, uncons, length, filter, concatMap, (:), (..))
+import Data.Array.Partial as Partial
+import Data.Foldable (product, foldl, foldr, null)
 import Data.Maybe (Maybe(..))
-import Data.Monoid (mempty)
-import Data.Semigroup ((<>))
-import Data.Unfoldable (none)
+import Data.Path (size, filename, root, isDirectory, Path, ls)
+import Data.HeytingAlgebra (not)
 import Partial.Unsafe (unsafePartial)
-import Data.Path
-import Effect.Console (logShow)
-import Effect.Class (liftEffect)
-
 
 -- 4. Recursion, Maps And Folds
 
@@ -31,18 +26,19 @@ fib n = fib (n - 1) + fib (n - 2)
 {-
 1. (Easy) Write a recursive function which returns true if and only if its input is an even integer.
 -}
-evenInt :: Int -> Boolean
-evenInt int =
-    if int `mod` 2 == 0 then true else false
-
 isEven :: Int -> Boolean
-isEven n = n `mod` 2 == 0
+isEven 0 = true
+isEven 1 = false
+isEven n = isEven (n - 2)
+
+isEven' :: Int -> Boolean
+isEven' n = n `mod` 2 == 0
 
 length' :: forall a. Array a -> Int
 length' arr =
     if null arr
         then 0
-        else 1 + length' (unsafePartial tail arr)
+        else 1 + length' (unsafePartial Partial.tail arr)
 
 {-
 2. (Medium) Write a recursive function which counts the number of even integers in an array.
@@ -61,6 +57,8 @@ countEven l =
         s + countEven tail
     Nothing -> 0
 
+countEven' :: Array Int -> Int
+countEven' = length <<< filter isEven
 
 -- EXCERCISES
 
@@ -68,19 +66,22 @@ countEven l =
 1. (Easy) Use the map or <$> function to write a function which calculates the squares of an array of numbers.
 -}
 mapSquare :: Array Int -> Array Int
-mapSquare arr = map (\n -> n*n) arr
+mapSquare = map (\n -> n * n)
 
 {-
 2. (Easy) Use the filter function to write a function which removes the negative numbers from an array of numbers.
 -}
-filter' :: Array Int -> Array Int
-filter' arr = filter (\n -> n > 0 ) arr
+removeNegatives :: Array Int -> Array Int
+removeNegatives = filter (\n -> n > 0 )
 
 {-
 3. (Medium) Define an infix synonym <$?> for filter. Rewrite your answer to the previous question to use your new operator.
 Experiment with the precedence level and associativity of your operator in PSCi.
 -}
--- infix 8 <$> as <$?>
+infix 8 filter as <$?>
+
+removeNegatives' :: Array Number -> Array Number
+removeNegatives' arr = (\n -> n >= 0.0) <$?> arr
 
 
 -- 4.9 Array Comprehensions
@@ -94,14 +95,20 @@ pairs'' n =
 
 
 -- 4.10 Do Notation
-factors' :: Int -> Array (Array Int)
-factors' n = filter (\pair -> product pair == n) (pairs'' n)
-
 factors :: Int -> Array (Array Int)
-factors n = filter (\xs -> product xs == n) $ do
+factors n = filter (\pair -> product pair == n) (pairs'' n)
+
+factors' :: Int -> Array (Array Int)
+factors' n = filter (\xs -> product xs == n) $ do
     i <- 1 .. n
     j <- i .. n
     pure [i, j]
+
+factors'' :: Int -> Array Int
+factors'' n = do
+  x <- 1 .. n
+  guard $ (n `mod` x) == 0
+  pure x
 
 factorsWithGuard :: Int -> Array (Array Int)
 factorsWithGuard n = do
@@ -118,13 +125,7 @@ factorsWithGuard n = do
 Prime numbers are positive, non-zero numbers that have exactly two factors -- no more, no less.
 -}
 isPrime :: Int -> Boolean
-isPrime 0 = false
-isPrime 1 = false
-isPrime 2 = true
-isPrime n =
-    if (n > 0) && ((length $ factorsWithGuard n) == 1)
-        then true
-    else false
+isPrime n = length (factors n) == 1
 
 {-
 2. (Medium) Write a function which uses do notation to find the cartesian product of two arrays,
@@ -139,7 +140,11 @@ cartesianProduct :: Array Int -> Array Int -> Array (Array Int)
 cartesianProduct arr0 arr1 =
     concatMap (\i -> map (\j -> [i, j]) arr1) arr0
 
---cartesianProduct' arr0 arr1 = do
+cartesianProduct' :: forall a. Array a -> Array a -> Array (Array a)
+cartesianProduct' arrA arrB = do
+  a <- arrA
+  b <- arrB
+  pure [a, b]
 
 
 {-
@@ -148,36 +153,34 @@ Use the guard function in an array comprehension to write a function triples whi
 Your function should have type Int -> Array (Array Int).
 -}
 triples :: Int -> Array (Array Int)
-triples n = do
-    a <- 1 .. n
-    b <- a .. n
-    guard (a * a + b * b == n * n)
-    pure[a, b, n]
+triples c = do
+    a <- 1 .. c
+    b <- a .. c
+    guard (a * a + b * b == c * c)
+    pure[a, b, c]
 
 
 {-
 4. (Difficult) Write a function factorizations which produces all factorizations of an integer n,
-i.e. arrays of integers whose product is n. Hint: for an integer greater than 1, break the problem down into two subproblems:
+i.e. arrays of integers whose product is n.
+Hint: for an integer greater than 1, break the problem down into two subproblems:
 finding the first factor, and finding the remaining factors.
 -}
+factorizations :: Int -> Array (Array Int)
+factorizations n = [n] : do
+  x <- factors'' n
+  guard $ x > 1 && x < n
+  xs <- factorizations $ n / x
+  pure $ x : xs
 
 
--- 4.12 Folds
---foldl (\acc n -> acc <> show n) "" [1,2,3,4,5]
---"12345"
-
---foldr (\n acc -> acc <> show n) "" [1,2,3,4,5]
---"54321"
-
--- 4.13 Tail recursion
-
--- 4.14 Accumulators
---reverse :: forall a. Array a -> Array a
---reverse = reverse' []
---  where
---    reverse' acc [] = acc
---    reverse' acc xs = reverse' (unsafePartial head xs : acc)
---                               (unsafePartial tail xs)
+--4.14 Accumulators
+reverse :: forall a. Array a -> Array a
+reverse = reverse' []
+  where
+    reverse' acc [] = acc
+    reverse' acc xs = reverse' (unsafePartial Partial.head xs : acc)
+                               (unsafePartial Partial.tail xs)
 
 -- 4.15 Prefer Folds to Explicit Recursion
 reverseR :: forall a. Array a -> Array a
@@ -189,32 +192,41 @@ reverseR = foldr (\x xs -> xs <> [x]) []
 1. (Easy) Use foldl to test whether an array of boolean values are all true.
 -}
 isTrue :: Array Boolean -> Boolean
-isTrue arr = foldl (\x y -> x && y) true arr
+isTrue = foldl (\x y -> x && y) true
 
 {-
 2. (Medium) Characterize those arrays xs for which the function foldl (==) false xs returns true.
 -}
-characterize :: Array Boolean -> Boolean
-characterize xs = foldl (==) false xs
+allTrue :: Array Boolean -> Boolean
+allTrue = foldl (==) false
 
 {-
 3. (Medium) Rewrite the following function in tail recursive form using an accumulator parameter:
 -}
 count :: forall a. (a -> Boolean) -> Array a -> Int
 count _ [] = 0
-count p xs = if p (unsafePartial head xs)
-               then count p (unsafePartial tail xs) + 1
-               else count p (unsafePartial tail xs)
+count p xs = if p (unsafePartial Partial.head xs)
+               then count p (unsafePartial Partial.tail xs) + 1
+               else count p (unsafePartial Partial.tail xs)
 
 countTailReq :: forall a. (a -> Boolean) -> Array a -> Int -> Int
 countTailReq = countTailReq'
     where
-        countTailReq' :: forall a. (a -> Boolean) -> Array a -> Int -> Int
+        countTailReq' :: forall b. (b -> Boolean) -> Array b -> Int -> Int
         countTailReq' _ [] _ = 0
         countTailReq' p xs acc =
-            if p (unsafePartial head xs)
-                then countTailReq' p (unsafePartial tail xs) acc + 1
-                else countTailReq' p (unsafePartial tail xs) acc
+            if p (unsafePartial Partial.head xs)
+                then countTailReq' p (unsafePartial Partial.tail xs) acc + 1
+                else countTailReq' p (unsafePartial Partial.tail xs) acc
+
+countTailReq'' :: forall a. (a -> Boolean) -> Array a -> Int
+countTailReq'' p = count' 0
+  where
+    count' acc arr = case uncons arr of
+      Nothing -> acc
+      Just { head: x, tail: xs } -> if p x
+        then count' (acc + 1) xs
+        else count' acc xs
 
 {-
 4. (Medium) Write reverse in terms of foldl.
@@ -227,7 +239,7 @@ reverseL = foldl (\xs x -> [x] <> xs) []
 
 --4.17 Listing All Files
 allFiles :: Path -> Array Path
-allFiles root = root : concatMap allFiles (ls file)
+allFiles root = root : concatMap allFiles (ls root)
 
 -- Great! Now let’s see if we can write this function using an array comprehension using do notation.
 allFiles' :: Path -> Array Path
@@ -235,22 +247,33 @@ allFiles' file = file : do
     child <- ls file
     allFiles' child
 
--- EXCERCISES
 
+-- EXCERCISES
 {-
 1. (Easy) Write a function onlyFiles which returns all files (not directories) in all subdirectories of a directory.
 -}
 onlyFiles :: Path -> Array Path
-onlyFiles file = file : do
-    child <- ls file
-    guard $ isDirectory child
-    onlyFiles child
-
+onlyFiles = filter (not isDirectory) <<< allFiles
 
 {-
 2. (Medium) Write a fold to determine the largest and smallest files in the filesystem.
 -}
---smallest :: Path -> Path
+--foldl :: forall a b f. Foldable f => (b -> a -> b) -> b -> f a -> b
+smallestFile :: Path -> Maybe Path
+smallestFile = foldl smallest Nothing <<< onlyFiles
+  where
+    smallest Nothing path = Just path
+    smallest (Just acc) path = if size acc < size path
+      then Just acc
+      else Just path
+
+largestFile :: Path -> Maybe Path
+largestFile = foldl largest Nothing <<< onlyFiles
+    where
+      largest Nothing path = Just path
+      largest (Just acc) path = if size acc > size path
+        then Just acc
+        else Just path
 
 {-
 3. (Difficult) Write a function whereIs to search for a file by name.
@@ -258,10 +281,13 @@ The function should return a value of type Maybe Path, indicating the directory 
 It should behave as follows:
  > whereIs "/bin/ls"
  Just (/bin/)
-
  > whereIs "/bin/cat"
  Nothing
 Hint: Try to write this function as an array comprehension using do notation.
 -}
-
--- 4.18 Conclusion
+whereIs :: String -> Maybe Path
+whereIs file = head $ do
+  path <- allFiles' root
+  child <- ls path
+  guard $ filename child == file
+  pure path

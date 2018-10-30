@@ -1,13 +1,16 @@
 module Test.Main where
 
-import Prelude (Unit, discard)
+import Prelude (Unit, discard, ($))
 import Effect (Effect)
 import Test.Spec (describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
 import Test.Spec.Reporter.Console (consoleReporter)
 import Test.Spec.Runner (run)
+import Data.Array (length)
+import Data.Maybe (Maybe(..))
 
-import Main (triples, factorsWithGuard, isPrime, cartesianProduct, isTrue, characterize)
+import Main (triples, factorsWithGuard, isPrime, cartesianProduct, isTrue, allTrue, onlyFiles, smallestFile)
+import Data.Path (root)
 
 main :: Effect Unit
 main = run [consoleReporter] do
@@ -36,6 +39,9 @@ main = run [consoleReporter] do
       isTrue [true, true, true] `shouldEqual` true
   describe "Characterize arrays" do
     it "should return false for empty array" do
-      characterize [] `shouldEqual` false
+      allTrue [] `shouldEqual` false
     it "should return false for all true array" do
-      characterize [true, true, true] `shouldEqual` false
+      allTrue [true, true, true] `shouldEqual` false
+  describe "File system" do
+    it "should list only files" do
+      (length $ onlyFiles root) `shouldEqual` 7
