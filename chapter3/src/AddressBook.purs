@@ -38,7 +38,6 @@ insertEntry entry book = Cons entry book
 
 
 -- 3.12 Querying the Address Book
-
 findEntry :: String -> String -> AddressBook -> Maybe Entry
 findEntry firstName lastName = head <<< filter filterEntry
   where
@@ -84,3 +83,18 @@ removeDuplicates book = nubBy isDuplicate book
 
 isDuplicate :: (Entry -> Entry -> Boolean)
 isDuplicate entryA entryB = entryA.firstName == entryB.firstName && entryA.lastName == entryB.lastName
+
+
+-- Filter based on predicate function
+-- filter' (\x -> x > 2) (1..10)
+
+filter' :: (Int -> Boolean) -> Array Int -> Array Int
+filter' f arr = case uncons arr of
+  Just {head: x, tail} -> if (f x) then x : (filter' f tail) else (filter' f tail)
+  Nothing -> []
+
+filter'' :: (Int -> Boolean) -> Array Int -> Array Int
+filter'' f arr = case uncons arr of
+  Just {head: x, tail} | f x -> x : filter'' f tail
+  Just {tail} -> filter'' f tail
+  Nothing -> []
