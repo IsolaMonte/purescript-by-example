@@ -2,6 +2,7 @@ module Main where
 
 import Prelude (class Eq, class Functor, class Ord, class Semigroup, class Show, Ordering(..), map, show, (&&), (<), (<>), (==), (>))
 import Data.Foldable (class Foldable)
+import Data.Array (foldl, foldr)
 
 --6. Type Classes
 
@@ -84,7 +85,7 @@ we can add a new “infinite” value which is greater than any other value:
 -}
 data Extended a = Finite a | Infinite
 --Write an Ord instance for Extended a which reuses the Ord instance for a.
-instance ordExtended :: (Eq a, Ord a) => Ord (Extended a) where
+instance ordExtended :: Ord a => Ord (Extended a) where
     compare (Finite a) Infinite = LT
     compare Infinite (Finite b) = GT
     compare Infinite Infinite = EQ
@@ -106,9 +107,9 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 -}
---instance nonEmptyFoldable :: Foldable Array => Foldable NonEmpty where
-    --foldl f m (NonEmpty x xs) = ?_
-    --foldr f m (NonEmpty x xs) = ?_
+instance nonEmptyFoldable :: Foldable Array => Foldable NonEmpty where
+    foldl f acc (NonEmpty x xs) = foldl f acc ([x] <> xs)
+    foldr f acc (NonEmpty x xs) = foldr f acc ([x] <> xs)
     --foldMap f (NonEmpty x xs) = ?_
 
 {-
