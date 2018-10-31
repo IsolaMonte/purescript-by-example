@@ -35,7 +35,6 @@ instance showShape :: Show Shape where
         "Text [location: " <> show loc <> ", text: " <> show text <> "]"
 
 
-
 --EXERCISES: 6.4 Common Type Classes
 {-
 1.(Easy) The following newtype represents a complex number:
@@ -51,8 +50,6 @@ instance showComplex :: Show Complex where
 
 instance eqComplex :: Eq Complex where
     eq (Complex x1) (Complex x2) = x1.real == x2.real && x1.imaginary == x2.imaginary
-
-
 
 
 -- EXERCISES: 6.7 Instance Dependencies
@@ -72,13 +69,13 @@ instance eqNonEmpty :: (Eq a, Eq (Array a)) => Eq (NonEmpty a) where
 {-
 2. (Medium) Write a Semigroup instance for NonEmpty a by reusing the Semigroup instance for Array.
 -}
-instance nonEmptySemigroup :: Semigroup (Array a) => Semigroup (NonEmpty a) where
+instance semigroupNonEmpty :: Semigroup (Array a) => Semigroup (NonEmpty a) where
     append (NonEmpty x xs) (NonEmpty y ys) = NonEmpty x (xs <> [y] <> ys)
 
 {-
 3. (Medium) Write a Functor instance for NonEmpty.
 -}
-instance nonEmptyFunctor :: Functor NonEmpty where
+instance functorNonEmpty  :: Functor NonEmpty where
     map f (NonEmpty x xs) = NonEmpty (f x) (map f xs)
 
 {-
@@ -87,7 +84,7 @@ we can add a new “infinite” value which is greater than any other value:
 -}
 data Extended a = Finite a | Infinite
 --Write an Ord instance for Extended a which reuses the Ord instance for a.
-instance extendedOrd :: (Eq a, Ord a) => Ord (Extended a) where
+instance ordExtended :: (Eq a, Ord a) => Ord (Extended a) where
     compare (Finite a) Infinite = LT
     compare Infinite (Finite b) = GT
     compare Infinite Infinite = EQ
@@ -96,7 +93,7 @@ instance extendedOrd :: (Eq a, Ord a) => Ord (Extended a) where
                                         if a < b then LT
                                         else EQ
 
-instance extendedEq :: Eq a => Eq (Extended a) where
+instance eqExtended :: Eq a => Eq (Extended a) where
     eq (Finite a) Infinite = false
     eq Infinite (Finite b) = false
     eq Infinite Infinite = true
@@ -109,11 +106,10 @@ class Foldable f where
   foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
   foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 -}
-instance nonEmptyFoldable :: Foldable Array => Foldable NonEmpty where
-    foldl f m (NonEmpty x xs) = ?_
+--instance nonEmptyFoldable :: Foldable Array => Foldable NonEmpty where
+    --foldl f m (NonEmpty x xs) = ?_
     --foldr f m (NonEmpty x xs) = ?_
     --foldMap f (NonEmpty x xs) = ?_
-
 
 {-
 6. (Difficult) Given an type constructor f which defines an ordered container (and so has a Foldable instance),
