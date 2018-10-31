@@ -1,8 +1,7 @@
 module Main where
 
 import Prelude (class Eq, class Functor, class Ord, class Semigroup, class Show, Ordering(..), map, show, (&&), (<), (<>), (==), (>))
-import Data.Foldable (class Foldable)
-import Data.Array (foldl, foldr)
+import Data.Foldable (class Foldable, foldMap, foldl, foldr)
 
 --6. Type Classes
 
@@ -110,7 +109,7 @@ class Foldable f where
 instance nonEmptyFoldable :: Foldable Array => Foldable NonEmpty where
     foldl f acc (NonEmpty x xs) = foldl f acc ([x] <> xs)
     foldr f acc (NonEmpty x xs) = foldr f acc ([x] <> xs)
-    --foldMap f (NonEmpty x xs) = ?_
+    foldMap f (NonEmpty x xs) = foldMap f ([x] <> xs)
 
 {-
 6. (Difficult) Given an type constructor f which defines an ordered container (and so has a Foldable instance),
