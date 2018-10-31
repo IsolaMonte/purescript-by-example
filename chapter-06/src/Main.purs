@@ -1,7 +1,7 @@
 module Main where
 
-import Prelude
-import Data.Foldable
+import Prelude (class Eq, class Functor, class Ord, class Semigroup, class Show, Ordering(..), map, show, (&&), (<), (<>), (==), (>))
+import Data.Foldable (class Foldable)
 
 --6. Type Classes
 
@@ -35,9 +35,8 @@ instance showShape :: Show Shape where
         "Text [location: " <> show loc <> ", text: " <> show text <> "]"
 
 
---6.4 Common Type Classes
 
---EXERCISES
+--EXERCISES: 6.4 Common Type Classes
 {-
 1.(Easy) The following newtype represents a complex number:
 Define Show and Eq instances for Complex.
@@ -51,17 +50,12 @@ instance showComplex :: Show Complex where
     show (Complex x) = "Real: " <> show x.real <> ", Imaginary: " <> show x.imaginary <> "i"
 
 instance eqComplex :: Eq Complex where
-    eq (Complex x1) (Complex x2) = x1.real == x2.real && x1.imaginary == x2.imagniary
+    eq (Complex x1) (Complex x2) = x1.real == x2.real && x1.imaginary == x2.imaginary
 
 
---6.5 Type Annotations
 
 
---6.6 Overlapping Instances
-
-
--- EXERCISES
-
+-- EXERCISES: 6.7 Instance Dependencies
 {-
 1. (Easy) The following declaration defines a type of non-empty arrays of elements of type a.
 Write an Eq instance for the type NonEmpty a which reuses the instances for Eq a and Eq (Array a).
@@ -70,7 +64,7 @@ Write an Eq instance for the type NonEmpty a which reuses the instances for Eq a
 data NonEmpty a = NonEmpty a (Array a)
 
 instance showNonEmpty :: (Show a) => Show (NonEmpty a) where
-  show (NonEmpty x xs) = show ([x] <> xs)
+    show (NonEmpty x xs) = show ([x] <> xs)
 
 instance eqNonEmpty :: (Eq a, Eq (Array a)) => Eq (NonEmpty a) where
     eq (NonEmpty x xs) (NonEmpty y ys) = x == y && xs == ys
@@ -79,11 +73,13 @@ instance eqNonEmpty :: (Eq a, Eq (Array a)) => Eq (NonEmpty a) where
 2. (Medium) Write a Semigroup instance for NonEmpty a by reusing the Semigroup instance for Array.
 -}
 instance nonEmptySemigroup :: Semigroup (Array a) => Semigroup (NonEmpty a) where
-    append (NonEmpty x xs) (NonEmpty y ys) = ?_
+    append (NonEmpty x xs) (NonEmpty y ys) = NonEmpty x (xs <> [y] <> ys)
 
 {-
 3. (Medium) Write a Functor instance for NonEmpty.
 -}
+instance nonEmptyFunctor :: Functor NonEmpty where
+    map f (NonEmpty x xs) = NonEmpty (f x) (map f xs)
 
 {-
 4. (Medium) Given any type a with an instance of Ord,
@@ -91,10 +87,33 @@ we can add a new “infinite” value which is greater than any other value:
 -}
 data Extended a = Finite a | Infinite
 --Write an Ord instance for Extended a which reuses the Ord instance for a.
+instance extendedOrd :: (Eq a, Ord a) => Ord (Extended a) where
+    compare (Finite a) Infinite = LT
+    compare Infinite (Finite b) = GT
+    compare Infinite Infinite = EQ
+    compare (Finite a) (Finite b) = if a > b then GT
+                                    else
+                                        if a < b then LT
+                                        else EQ
+
+instance extendedEq :: Eq a => Eq (Extended a) where
+    eq (Finite a) Infinite = false
+    eq Infinite (Finite b) = false
+    eq Infinite Infinite = true
+    eq (Finite a) (Finite b) = a == b
 
 {-
 5. (Difficult) Write a Foldable instance for NonEmpty. Hint: reuse the Foldable instance for arrays.
+class Foldable f where
+  foldr :: forall a b. (a -> b -> b) -> b -> f a -> b
+  foldl :: forall a b. (b -> a -> b) -> b -> f a -> b
+  foldMap :: forall a m. Monoid m => (a -> m) -> f a -> m
 -}
+instance nonEmptyFoldable :: Foldable Array => Foldable NonEmpty where
+    foldl f m (NonEmpty x xs) = ?_
+    --foldr f m (NonEmpty x xs) = ?_
+    --foldMap f (NonEmpty x xs) = ?_
+
 
 {-
 6. (Difficult) Given an type constructor f which defines an ordered container (and so has a Foldable instance),
