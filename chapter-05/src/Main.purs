@@ -133,12 +133,11 @@ data Maybe a = Nothing | Just a
 --5.13 Using ADTs
 exampleLine :: Shape
 exampleLine = Line p1 p2
-    where
-        p1 :: Point
-        p1 = Point { x: 0.0, y: 0.0 }
-
-        p2 :: Point
-        p2 = Point { x: 100.0, y: 50.0 }
+  where
+    p1 :: Point
+    p1 = Point { x: 0.0, y: 0.0 }
+    p2 :: Point
+    p2 = Point { x: 100.0, y: 50.0 }
 
 -- Pattern match on constructor to get the values out!
 showPoint :: Point -> String
@@ -160,9 +159,9 @@ origin = Point { x, y }
 -}
 drawCircle :: Shape
 drawCircle = Circle center radius
-    where
-        center = origin
-        radius = 10.0
+  where
+    center = origin
+    radius = 10.0
 
 --instance showPoint' :: Show Point where
 --    show (Point { x, y }) = "(" <> show x <> ", " <> show y <> ")"
@@ -176,9 +175,9 @@ drawCircle = Circle center radius
 -}
 scaleUp :: Shape -> Shape
 scaleUp (Circle c r) = Circle center radius
-    where
-        center = origin
-        radius = 2.0 * r
+  where
+    center = origin
+    radius = 2.0 * r
 scaleUp _ = drawCircle
 
 

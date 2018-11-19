@@ -36,9 +36,9 @@ isEven' n = n `mod` 2 == 0
 
 length' :: forall a. Array a -> Int
 length' arr =
-    if null arr
-        then 0
-        else 1 + length' (unsafePartial Partial.tail arr)
+  if null arr
+    then 0
+    else 1 + length' (unsafePartial Partial.tail arr)
 
 {-
 2. (Medium) Write a recursive function which counts the number of even integers in an array.
@@ -100,16 +100,16 @@ factors n = filter (\pair -> product pair == n) (pairs'' n)
 
 factors' :: Int -> Array (Array Int)
 factors' n = filter (\xs -> product xs == n) $ do
-    i <- 1 .. n
-    j <- i .. n
-    pure [i, j]
+  i <- 1 .. n
+  j <- i .. n
+  pure [i, j]
 
 factorsWithGuard :: Int -> Array (Array Int)
 factorsWithGuard n = do
-    i <- 1 .. n
-    j <- i .. n
-    guard $ i * j == n
-    pure [i, j]
+  i <- 1 .. n
+  j <- i .. n
+  guard $ i * j == n
+  pure [i, j]
 
 
 -- EXCERCISES
@@ -132,7 +132,7 @@ and, in contrast:
 
 cartesianProduct :: Array Int -> Array Int -> Array (Array Int)
 cartesianProduct arr0 arr1 =
-    concatMap (\i -> map (\j -> [i, j]) arr1) arr0
+  concatMap (\i -> map (\j -> [i, j]) arr1) arr0
 
 cartesianProduct' :: forall a. Array a -> Array a -> Array (Array a)
 cartesianProduct' arrA arrB = do
@@ -148,10 +148,10 @@ Your function should have type Int -> Array (Array Int).
 -}
 triples :: Int -> Array (Array Int)
 triples c = do
-    a <- 1 .. c
-    b <- a .. c
-    guard (a * a + b * b == c * c)
-    pure[a, b, c]
+  a <- 1 .. c
+  b <- a .. c
+  guard (a * a + b * b == c * c)
+  pure[a, b, c]
 
 
 {-
@@ -213,13 +213,13 @@ count p xs = if p (unsafePartial Partial.head xs)
 
 countTailReq :: forall a. (a -> Boolean) -> Array a -> Int -> Int
 countTailReq = countTailReq'
-    where
-        countTailReq' :: forall b. (b -> Boolean) -> Array b -> Int -> Int
-        countTailReq' _ [] _ = 0
-        countTailReq' p xs acc =
-            if p (unsafePartial Partial.head xs)
-                then countTailReq' p (unsafePartial Partial.tail xs) acc + 1
-                else countTailReq' p (unsafePartial Partial.tail xs) acc
+  where
+    countTailReq' :: forall b. (b -> Boolean) -> Array b -> Int -> Int
+    countTailReq' _ [] _ = 0
+    countTailReq' p xs acc =
+      if p (unsafePartial Partial.head xs)
+        then countTailReq' p (unsafePartial Partial.tail xs) acc + 1
+        else countTailReq' p (unsafePartial Partial.tail xs) acc
 
 countTailReq'' :: forall a. (a -> Boolean) -> Array a -> Int
 countTailReq'' p = count' 0
@@ -269,11 +269,11 @@ smallestFile = foldl smallest Nothing <<< onlyFiles
 
 largestFile :: Path -> Maybe Path
 largestFile = foldl largest Nothing <<< onlyFiles
-    where
-      largest Nothing path = Just path
-      largest (Just acc) path = if size acc > size path
-        then Just acc
-        else Just path
+  where
+    largest Nothing path = Just path
+    largest (Just acc) path = if size acc > size path
+      then Just acc
+      else Just path
 
 {-
 3. (Difficult) Write a function whereIs to search for a file by name.
