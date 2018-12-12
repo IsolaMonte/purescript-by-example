@@ -5,7 +5,9 @@
   "depends": [
     "console",
     "globals",
+    "integers",
     "math",
+    "newtype",
     "prelude",
     "psci-support",
     "unsafe-coerce"

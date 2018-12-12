@@ -7,6 +7,7 @@ import Data.Foldable (sum)
 import Partial.Unsafe (unsafePartial)
 import Math (pi, pow)
 
+
 -- 5. Pattern matching
 -- This chapter will introduce two new concepts: algebraic data types, and pattern matching.
 -- We will also briefly cover an interesting feature of the PureScript type system: row polymorphism.
